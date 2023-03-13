@@ -132,13 +132,9 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
             f"<pre>{html.escape(tb_string)}</pre>"
         )
 
-        # split text into multiple messages due to 4096 character limit
-        message_chunk_size = 4000
-        message_chunks = [message[i:i + message_chunk_size] for i in range(0, len(message), message_chunk_size)]
-        for message_chunk in message_chunks:
-            await context.bot.send_message(update.effective_chat.id, message_chunk, parse_mode=ParseMode.HTML)
+        logger.error(message)
     except:
-        await context.bot.send_message(update.effective_chat.id, "Some error in error handler")
+        logger.error("Error")
 
 def run_bot() -> None:
     application = (
