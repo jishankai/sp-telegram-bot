@@ -3,7 +3,15 @@ import datetime
 import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-bot = telegram.Bot(token="6016010541:AAFU3XJ8nWViXNcJpTg3Oyb7DhIs2242Fe4")
+import yaml
+from pathlib import Path
+
+config_dir = Path(__file__).parent.parent.resolve() / "config"
+# load yaml config
+with open(config_dir / "config.yml", 'r') as f:
+    config_yaml = yaml.safe_load(f)
+
+bot = telegram.Bot(token=config_yaml["telegram_token"])
 
 # 定义 CoinGecko API 的 URL
 url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin%2Cethereum&vs_currencies=usd'
@@ -26,7 +34,7 @@ def get_prices():
     text += f'<i>BTC price: ${btc_price:.2f}</i>\n<i>ETH price: ${eth_price:.2f}</i>\n\n'
     text += f'<i>{now.strftime("%Y-%m-%d %H:%M")}</i>'
     
-    bot.send_message(chat_id="-922086924", text=text, parse_mode=telegram.ParseMode.HTML)
+    bot.send_message(chat_id=config_yaml["group_chat_id"], text=text, parse_mode=telegram.ParseMode.HTML)
 
 if __name__ == "__main__":
     get_prices()
