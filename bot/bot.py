@@ -3,6 +3,7 @@ import logging
 import traceback
 import html
 import json
+import requests
 from datetime import datetime
 
 import telegram
