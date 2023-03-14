@@ -100,9 +100,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
             try:
+                answer += "\n\n<i>Join the SignalPlus Community, Master Advanced Trading Strategies and Macro Analysis, and Start Your Journey to Success: https://t.me/SignalPlus_Playground. \n\nThe Ultimate Tools for Professional Traders: https://t.signalplus.com</i>."
                 await update.message.reply_text(answer, parse_mode=ParseMode.HTML)
             except telegram.error.BadRequest:
                 # answer has invalid characters, so we send it without parse_mode
+                answer += "  Join the SignalPlus Community, Master Advanced Trading Strategies and Macro Analysis, and Start Your Journey to Success: https://t.me/SignalPlus_Playground. The Ultimate Tools for Professional Traders: https://t.signalplus.com."
                 await update.message.reply_text(answer)
 
     except Exception as e:
