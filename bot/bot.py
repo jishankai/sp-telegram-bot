@@ -26,6 +26,12 @@ import chatgpt
 db = database.Database()
 logger = logging.getLogger(__name__)
 
+HELP_MESSAGE = """Commands:
+⚪ /c – Crypto Token's Info[/c [token's id]. eg. /c btc]
+⚪ /l – Support Token's Id[eg. /l]
+⚪ /h – Show Help
+"""
+
 async def register_user_if_not_exists(update: Update, context: CallbackContext, user: User):
     if not db.check_if_user_exists(user.id):
         db.add_new_user(
@@ -49,13 +55,51 @@ async def start_handle(update: Update, context: CallbackContext):
     db.start_new_dialog(user_id)
     
     reply_text = "Hi! I'm <b>SignalPlus</b> bot. How can I help you today? 🤖"
+    reply_text += HELP_MESSAGE
     
     await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
+
+async def h_handle(update: Update, context: CallbackContext):
+    await update.message.reply_text(HELP_MESSAGE, parse_mode=ParseMode.HTML)
+
+async def c_handle(update: Update, context: CallbackContext):
+    args = context.args
+    if len(args) == 0:
+        update.message.reply_text('eg. /coin btc')
+        return
+    currency = args[0].upper()
+
+    # 发送请求获取货币数据
+    url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={}'.format(currency)
+    response = requests.get(url)
+    if response.status_code != 200:
+        update.message.reply_text('Data is not available. Please try again later.')
+        return
+    data = response.json()
+    if len(data) == 0:
+        update.message.reply_text('Token cannot be found. Please check that id is correct.')
+        return
+    price = data[0]['current_price']
+    change = data[0]['price_change_percentage_24h']
+    
+    # 发送响应消息
+    message = '<i>{} 24-hour price changes: {:.2f}%，current price：${:.2f}</i>'.format(currency, change, price)
+    await update.message.reply_text(message, parse_mode=ParseMode.HTML)
+
+async def l_handle(update: Update, context: CallbackContext):
+    url = 'https://api.coingecko.com/api/v3/coins/list'
+    response = requests.get(url)
+    if response.status_code != 200:
+        print('Failed to obtain the token list. Please try again later.')
+        exit()
+    data = response.json()
+
+    symbols = [d['symbol'].upper() for d in data]
+    await update.message.reply_text(symbols, parse_mode=ParseMode.HTML)
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
     # check if message is edited
     if update.edited_message is not None:
-        await edited_message_handle(update, context)
         return
 
     await register_user_if_not_exists(update, context, update.message.from_user)
@@ -67,13 +111,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             db.start_new_dialog(user_id)
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-    # send typing action
-    await update.message.chat.send_action(action="typing")
-
     try:
         message = message or update.message.text
         chat_type = update.message.chat.type
         if chat_type == 'private' or (chat_type == 'group' and config.bot_id in message):
+            # send typing action
+            await update.message.chat.send_action(action="typing")
+
             chatgpt_instance = chatgpt.ChatGPT(use_chatgpt_api=config.use_chatgpt_api)
             answer, n_used_tokens, n_first_dialog_messages_removed = chatgpt_instance.send_message(
                 message,
@@ -114,11 +158,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         return
 
 
-async def edited_message_handle(update: Update, context: CallbackContext):
-    text = "🥲 Unfortunately, message <b>editing</b> is not supported"
-    await update.edited_message.reply_text(text, parse_mode=ParseMode.HTML)
-
-
 async def error_handle(update: Update, context: CallbackContext) -> None:
     logger.error(msg="Exception while handling an update:", exc_info=context.error)
 
@@ -152,9 +191,10 @@ def run_bot() -> None:
         user_filter = filters.User(username=config.allowed_telegram_usernames)
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
-
+    application.add_handler(CommandHandler("h", h_handle, filters=user_filter))
+    application.add_handler(CommandHandler("c", c_handle, filters=user_filter))
+    application.add_handler(CommandHandler("l", l_handle, filters=user_filter))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
-    
     application.add_error_handler(error_handle)
     
     # start the bot
