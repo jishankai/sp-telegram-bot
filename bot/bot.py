@@ -4,7 +4,9 @@ import traceback
 import html
 import json
 import requests
+import json
 from datetime import datetime
+from pathlib import Path
 
 import telegram
 from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup
@@ -27,11 +29,16 @@ import chatgpt
 db = database.Database()
 logger = logging.getLogger(__name__)
 
-HELP_MESSAGE = """Commands:
-⚪ /c – Crypto Token's Info[/c [token's id]. eg. /c btc]
-⚪ /l – Support Token's Id[eg. /l]
-⚪ /h – Show Help
+HELP_MESSAGE = """
+<i>
+Commands:
+- /coin – Token's Info[eg. /c bitcoin]
+- /help – Help
+</i>
 """
+config_dir = Path(__file__).parent.parent.resolve() / "config"
+with open(config_dir / "SYMBOL2ID.json", 'r') as f:
+    symbol_to_id = json.load(f)
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext, user: User):
     if not db.check_if_user_exists(user.id):
@@ -60,43 +67,48 @@ async def start_handle(update: Update, context: CallbackContext):
     
     await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
 
-async def h_handle(update: Update, context: CallbackContext):
+async def help_handle(update: Update, context: CallbackContext):
     await update.message.reply_text(HELP_MESSAGE, parse_mode=ParseMode.HTML)
 
-async def c_handle(update: Update, context: CallbackContext):
+async def coin_handle(update: Update, context: CallbackContext):
     args = context.args
     if len(args) == 0:
-        update.message.reply_text('eg. /coin btc')
+        await update.message.reply_text('eg. /coin btc')
         return
+    
     currency = args[0].upper()
+    id = symbol_to_id.get(currency)
+    if id is None:
+        await update.message.reply_text('Token cannot be found. Please check its symbol is correct.')
+        return
 
     # 发送请求获取货币数据
-    url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={}'.format(currency)
+    url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={}'.format(id)
     response = requests.get(url)
     if response.status_code != 200:
-        update.message.reply_text('Data is not available. Please try again later.')
+        await update.message.reply_text('Data is not available. Please try again later.')
         return
     data = response.json()
     if len(data) == 0:
-        update.message.reply_text('Token cannot be found. Please check that id is correct.')
+        await update.message.reply_text('Token cannot be found. Please check its symbol is correct.')
         return
-    price = data[0]['current_price']
-    change = data[0]['price_change_percentage_24h']
-    
-    # 发送响应消息
-    message = '<i>{} 24-hour price changes: {:.2f}%，current price：${:.2f}</i>'.format(currency, change, price)
-    await update.message.reply_text(message, parse_mode=ParseMode.HTML)
 
-async def l_handle(update: Update, context: CallbackContext):
-    url = 'https://api.coingecko.com/api/v3/coins/list'
-    response = requests.get(url)
-    if response.status_code != 200:
-        print('Failed to obtain the token list. Please try again later.')
-        exit()
-    data = response.json()
+    try:
+        name = data[0]['name']
+        price = data[0]['current_price']
+        change = data[0]['price_change_percentage_24h']
+        high_24h = data[0]['high_24h']
+        low_24h = data[0]['low_24h']
+        volume = data[0]['total_volume']
+        market_cap = data[0]['market_cap']
+        market_cap_rank = data[0]['market_cap_rank']
 
-    symbols = [d['symbol'].upper() for d in data]
-    await update.message.reply_text(symbols, parse_mode=ParseMode.HTML)
+        # 发送响应消息
+        message = '<i>{}\nRank:{}\n24-hour Price Changes: {:.2f}%\nCurrent Price: ${:.2f}\nHigh in 24 hours: ${:.2f}\nLow in 24 hours: ${:.2f}\nTotal Volume: ${:,}\nMarket Cap: ${:,}</i>'.format(name, market_cap_rank, change, price, high_24h, low_24h, volume, market_cap)
+        await update.message.reply_text(message, parse_mode=ParseMode.HTML)
+    except:
+        await update.message.reply_text('Data is not available.')
+
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
     # check if message is edited
@@ -156,7 +168,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         error_text = f"Something went wrong during completion.\nReason: {e}"
         logger.error(error_text)
         await update.message.reply_text(error_text)
-        return
 
 
 async def error_handle(update: Update, context: CallbackContext) -> None:
@@ -192,9 +203,8 @@ def run_bot() -> None:
         user_filter = filters.User(username=config.allowed_telegram_usernames)
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
-    application.add_handler(CommandHandler("h", h_handle, filters=user_filter))
-    application.add_handler(CommandHandler("c", c_handle, filters=user_filter))
-    application.add_handler(CommandHandler("l", l_handle, filters=user_filter))
+    application.add_handler(CommandHandler("help", help_handle, filters=user_filter))
+    application.add_handler(CommandHandler("coin", coin_handle, filters=user_filter))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_error_handler(error_handle)
     
