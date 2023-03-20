@@ -14,6 +14,7 @@ class Database:
 
         self.user_collection = self.db["user"]
         self.dialog_collection = self.db["dialog"]
+        self.group_collection = self.db["group"]
 
     def check_if_user_exists(self, user_id: int, raise_exception: bool = False):
         if self.user_collection.count_documents({"_id": user_id}) > 0:
@@ -24,6 +25,19 @@ class Database:
             else:
                 return False
         
+    def check_if_group_exists(self, group_id: int):
+        if self.group_collection.count_documents({"_id": group_id}) > 0:
+            return True
+        else:
+            return False
+
+    def add_new_group(
+        self,
+        group_id: int
+    ):
+        if not self.check_if_group_exists(group_id):
+            self.group_collection.insert_one(group_id)
+
     def add_new_user(
         self,
         user_id: int,
