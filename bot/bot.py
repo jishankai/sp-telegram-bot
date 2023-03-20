@@ -105,6 +105,7 @@ async def coin_handle(update: Update, context: CallbackContext):
 
         # 发送响应消息
         message = '<i>{}\nRank:{}\n24-hour Price Changes: {:.2f}%\nCurrent Price: ${:.2f}\nHigh in 24 hours: ${:.2f}\nLow in 24 hours: ${:.2f}\nTotal Volume: ${:,}\nMarket Cap: ${:,}</i>'.format(name, market_cap_rank, change, price, high_24h, low_24h, volume, market_cap)
+
         await update.message.reply_text(message, parse_mode=ParseMode.HTML)
     except:
         await update.message.reply_text('Data is not available.')
@@ -127,7 +128,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     try:
         message = message or update.message.text
         chat_type = update.message.chat.type
-        if chat_type == 'private' or (chat_type == 'group' and config.bot_id in message):
+        if chat_type == 'private' or (chat_type in ['group', 'supergroup'] and config.bot_id in message):
             # collect group id
             await register_gorup_if_not_exists(update.message.chat.id)
 
