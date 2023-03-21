@@ -23,6 +23,7 @@ from telegram.constants import ParseMode, ChatAction
 import config
 import database
 import chatgpt
+import deribit_ws
 
 
 # setup
@@ -104,10 +105,22 @@ async def coin_handle(update: Update, context: CallbackContext):
         market_cap_rank = data[0]['market_cap_rank']
 
         # 发送响应消息
-        message = '<i>{}\nRank:{}\n24-hour Price Changes: {:.2f}%\nCurrent Price: ${:.2f}\nHigh in 24 hours: ${:.2f}\nLow in 24 hours: ${:.2f}\nTotal Volume: ${:,}\nMarket Cap: ${:,}</i>'.format(name, market_cap_rank, change, price, high_24h, low_24h, volume, market_cap)
+        if currency in ["BTC", "ETH"]:
+            deribit_ws_instance = deribit_ws.DeribitWS(client_id=config.deribit_id, client_secret=config.deribit_secret)
+            res = await deribit_ws_instance.ws_operation("subscribe", f"deribit_volatility_index.{currency.lower()}_usd")
+            if not res["params"]["data"]["volatility"]:
+                logger.error("DVOL is not available.")
+                message = '<i>{}\nRank:{}\n24-hour Price Changes: {:.2f}%\nCurrent Price: ${:.2f}\nHigh in 24 hours: ${:.2f}\nLow in 24 hours: ${:.2f}\nTotal Volume: ${:,}\nMarket Cap: ${:,}</i>'.format(name, market_cap_rank, change, price, high_24h, low_24h, volume, market_cap)
+            else:
+                message = '<i>{}\nRank:{}\n24-hour Price Changes: {:.2f}%\nCurrent Price: ${:.2f}\nHigh in 24 hours: ${:.2f}\nLow in 24 hours: ${:.2f}\nTotal Volume: ${:,}\nMarket Cap: ${:,}\nDVOL: {:.2f}</i>'.format(name, market_cap_rank, change, price, high_24h, low_24h, volume, market_cap, res["params"]["data"]["volatility"])
+                
+        else:
+            message = '<i>{}\nRank:{}\n24-hour Price Changes: {:.2f}%\nCurrent Price: ${:.2f}\nHigh in 24 hours: ${:.2f}\nLow in 24 hours: ${:.2f}\nTotal Volume: ${:,}\nMarket Cap: ${:,}</i>'.format(name, market_cap_rank, change, price, high_24h, low_24h, volume, market_cap)
 
         await update.message.reply_text(message, parse_mode=ParseMode.HTML)
-    except:
+    except Exception as e:
+        error_text = f"Something went wrong during completion.\nReason: {e}"
+        logger.error(error_text)
         await update.message.reply_text('Data is not available.')
 
 
@@ -130,7 +143,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         chat_type = update.message.chat.type
         if chat_type == 'private' or (chat_type in ['group', 'supergroup'] and config.bot_id in message):
             # collect group id
-            await register_gorup_if_not_exists(update.message.chat.id)
+            await register_group_if_not_exists(update.message.chat.id)
 
             # send typing action
             await update.message.chat.send_action(action="typing")

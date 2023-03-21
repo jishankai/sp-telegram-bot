@@ -36,7 +36,7 @@ class Database:
         group_id: int
     ):
         if not self.check_if_group_exists(group_id):
-            self.group_collection.insert_one(group_id)
+            self.group_collection.insert_one({"_id": group_id})
 
     def add_new_user(
         self,

@@ -37,7 +37,7 @@ class ChatGPT:
             try:
                 if self.use_chatgpt_api:
                     messages = self._generate_prompt_messages_for_chatgpt_api(message, dialog_messages, chat_mode)
-                    r = await openai.ChatCompletion.create(
+                    r = openai.ChatCompletion.create(
                         model="gpt-3.5-turbo",
                         messages=messages,
                         **OPENAI_COMPLETION_OPTIONS
@@ -45,7 +45,7 @@ class ChatGPT:
                     answer = r.choices[0].message.content
                 else:
                     prompt = self._generate_prompt(message, dialog_messages, chat_mode)
-                    r = await openai.Completion.create(
+                    r = openai.Completion.create(
                         engine="text-davinci-003",
                         prompt=prompt,
                         **OPENAI_COMPLETION_OPTIONS

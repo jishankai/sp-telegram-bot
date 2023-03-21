@@ -19,3 +19,5 @@ allowed_telegram_usernames = config_yaml["allowed_telegram_usernames"]
 new_dialog_timeout = config_yaml["new_dialog_timeout"]
 mongodb_uri = f"mongodb://mongo:{config_env['MONGODB_PORT']}"
 bot_id = config_yaml["bot_id"]
+deribit_id = config_yaml["deribit_id"]
+deribit_secret = config_yaml["deribit_secret"]
