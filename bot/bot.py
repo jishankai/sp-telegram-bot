@@ -4,7 +4,7 @@ import traceback
 import html
 import json
 import requests
-import json
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -148,38 +148,44 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             # send typing action
             await update.message.chat.send_action(action="typing")
 
-            chatgpt_instance = chatgpt.ChatGPT(use_chatgpt_api=config.use_chatgpt_api)
-            answer, n_used_tokens, n_first_dialog_messages_removed = await chatgpt_instance.send_message(
-                message,
-                dialog_messages=db.get_dialog_messages(user_id, dialog_id=None),
-                chat_mode=db.get_user_attribute(user_id, "current_chat_mode"),
-            )
 
-            # update user data
-            new_dialog_message = {"user": message, "bot": answer, "date": datetime.now()}
-            db.set_dialog_messages(
-                user_id,
-                db.get_dialog_messages(user_id, dialog_id=None) + [new_dialog_message],
-                dialog_id=None
-            )
-
-            db.set_user_attribute(user_id, "n_used_tokens", n_used_tokens + db.get_user_attribute(user_id, "n_used_tokens"))
-            # send message if some messages were removed from the context
-            if n_first_dialog_messages_removed > 0:
-                if n_first_dialog_messages_removed == 1:
-                    text = "✍️ <i>Note:</i> Your current dialog is too long, so your <b>first message</b> was removed from the context."
-                else:
-                    text = f"✍️ <i>Note:</i> Your current dialog is too long, so <b>{n_first_dialog_messages_removed} first messages</b> were removed from the context."
-
+            if re.search(config.filtered_pattern, message):
+                text = "<i>我是一个衍生品专家，建议不要跟我讨论政治问题。但是您有任何关于期权交易的问题，我会很乐意为您效劳。</i>"
                 await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+                return
+            else:
+                chatgpt_instance = chatgpt.ChatGPT(use_chatgpt_api=config.use_chatgpt_api)
+                answer, n_used_tokens, n_first_dialog_messages_removed = await chatgpt_instance.send_message(
+                    message,
+                    dialog_messages=db.get_dialog_messages(user_id, dialog_id=None),
+                    chat_mode=db.get_user_attribute(user_id, "current_chat_mode"),
+                )
 
-            try:
-                answer += "\n\n<i>Join the SignalPlus Community, Master Advanced Trading Strategies and Macro Analysis, and Start Your Journey to Success: https://t.me/SignalPlus_Playground. \n\nThe Ultimate Tools for Professional Traders: https://t.signalplus.com</i>."
-                await update.message.reply_text(answer, parse_mode=ParseMode.HTML)
-            except telegram.error.BadRequest:
-                # answer has invalid characters, so we send it without parse_mode
-                answer += "  Join the SignalPlus Community, Master Advanced Trading Strategies and Macro Analysis, and Start Your Journey to Success: https://t.me/SignalPlus_Playground. The Ultimate Tools for Professional Traders: https://t.signalplus.com."
-                await update.message.reply_text(answer)
+                # update user data
+                new_dialog_message = {"user": message, "bot": answer, "date": datetime.now()}
+                db.set_dialog_messages(
+                    user_id,
+                    db.get_dialog_messages(user_id, dialog_id=None) + [new_dialog_message],
+                    dialog_id=None
+                )
+
+                db.set_user_attribute(user_id, "n_used_tokens", n_used_tokens + db.get_user_attribute(user_id, "n_used_tokens"))
+                # send message if some messages were removed from the context
+                if n_first_dialog_messages_removed > 0:
+                    if n_first_dialog_messages_removed == 1:
+                        text = "✍️ <i>Note:</i> Your current dialog is too long, so your <b>first message</b> was removed from the context."
+                    else:
+                        text = f"✍️ <i>Note:</i> Your current dialog is too long, so <b>{n_first_dialog_messages_removed} first messages</b> were removed from the context."
+
+                    await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+
+                try:
+                    answer += "\n\n<i>Join the SignalPlus Community, Master Advanced Trading Strategies and Macro Analysis, and Start Your Journey to Success: https://t.me/SignalPlus_Playground. \n\nThe Ultimate Tools for Professional Traders: https://t.signalplus.com</i>."
+                    await update.message.reply_text(answer, parse_mode=ParseMode.HTML)
+                except telegram.error.BadRequest:
+                    # answer has invalid characters, so we send it without parse_mode
+                    answer += "  Join the SignalPlus Community, Master Advanced Trading Strategies and Macro Analysis, and Start Your Journey to Success: https://t.me/SignalPlus_Playground. The Ultimate Tools for Professional Traders: https://t.signalplus.com."
+                    await update.message.reply_text(answer)
 
     except Exception as e:
         error_text = f"Something went wrong during completion.\nReason: {e}"
