@@ -110,12 +110,12 @@ async def coin_handle(update: Update, context: CallbackContext):
             res = await deribit_ws_instance.ws_operation("subscribe", f"deribit_volatility_index.{currency.lower()}_usd")
             if not res["params"]["data"]["volatility"]:
                 logger.error("DVOL is not available.")
-                message = '<i>{name}\n📜Rank📜:{market_cap_rank}\n1 Day Price Change: {change:.2f}%{📈 if change>0 else 📉}\n💵Current Price: ${price:.2f}\n⬆️High in 24 hours: ${high_24h:.2f}\n⬇️Low in 24 hours: ${low_24h:.2f}\nTotal Volume: ${volume:,}\nMarket Cap: ${market_cap:,}</i>'
+                message = f'<i>{name}\n📜Rank📜:{market_cap_rank}\n1 Day Price Change: {change:.2f}%{📈 if change>0 else 📉}\n💵Current Price: ${price:.2f}\n⬆️High in 24 hours: ${high_24h:.2f}\n⬇️Low in 24 hours: ${low_24h:.2f}\nTotal Volume: ${volume:,}\nMarket Cap: ${market_cap:,}</i>'
             else:
-                message = '<i>{name}\n📜Rank📜:{market_cap_rank}\n1 Day Price Change: {change:.2f}%{📈 if change>0 else 📉}\n💵Current Price: ${price:.2f}\n⬆️High in 24 hours: ${high_24h:.2f}\n⬇️Low in 24 hours: ${low_24h:.2f}\nTotal Volume: ${volume:,}\nMarket Cap: ${market_cap:,}\nDVOL: {res["params"]["data"]["volatility"]:.2f}</i>'
+                message = f'<i>{name}\n📜Rank📜:{market_cap_rank}\n1 Day Price Change: {change:.2f}%{📈 if change>0 else 📉}\n💵Current Price: ${price:.2f}\n⬆️High in 24 hours: ${high_24h:.2f}\n⬇️Low in 24 hours: ${low_24h:.2f}\nTotal Volume: ${volume:,}\nMarket Cap: ${market_cap:,}\nDVOL: {res["params"]["data"]["volatility"]:.2f}</i>'
                 
         else:
-            message = '<i>{name}\n📜Rank📜:{market_cap_rank}\n1 Day Price Change: {change:.2f}%{📈 if change>0 else 📉}\n💵Current Price: ${price:.2f}\n⬆️High in 24 hours: ${high_24h:.2f}\n⬇️Low in 24 hours: ${low_24h:.2f}\nTotal Volume: ${volume:,}\nMarket Cap: ${market_cap:,}</i>'
+            message = f'<i>{name}\n📜Rank📜:{market_cap_rank}\n1 Day Price Change: {change:.2f}%{📈 if change>0 else 📉}\n💵Current Price: ${price:.2f}\n⬆️High in 24 hours: ${high_24h:.2f}\n⬇️Low in 24 hours: ${low_24h:.2f}\nTotal Volume: ${volume:,}\nMarket Cap: ${market_cap:,}</i>'
 
         await update.message.reply_text(message, parse_mode=ParseMode.HTML)
     except Exception as e:
