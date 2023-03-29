@@ -32,7 +32,7 @@ def get_prices():
 
     text = "🏷️ Spot Prices\n\n"
     text += f'<i>BTC price: ${btc_price:.2f}</i>\n<i>ETH price: ${eth_price:.2f}</i>\n\n'
-    text += f'<i>{now.strftime("%Y-%m-%d %H:%M")}</i>'
+    text += f'<i>{now.strftime("%Y-%m-%d %H:%M")} UTC</i>'
     
     bot.send_message(chat_id=config_yaml["group_chat_id"], text=text, parse_mode=telegram.ParseMode.HTML)
 
