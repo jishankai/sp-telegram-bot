@@ -15,7 +15,7 @@ class DeribitWS:
         self.loop = asyncio.get_event_loop()
 
         # Instance Variables
-        self.ws_connection_url: str = 'wss://test.deribit.com/ws/api/v2'
+        self.ws_connection_url: str = 'wss://www.deribit.com/ws/api/v2'
         self.client_id: str = client_id
         self.client_secret: str = client_secret
         self.websocket_client: websockets.WebSocketClientProtocol = None

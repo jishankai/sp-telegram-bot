@@ -143,7 +143,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         chat_type = update.message.chat.type
         if chat_type == 'private' or (chat_type in ['group', 'supergroup'] and config.bot_id in message):
             # collect group id
-            await register_group_if_not_exists(update.message.chat.id)
+            await register_group_if_not_exists(update.message.chat.id, update.message.chat.title)
 
             # send typing action
             await update.message.chat.send_action(action="typing")
@@ -213,9 +213,9 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
         logger.error("Error")
 
 
-async def register_group_if_not_exists(group_id):
+async def register_group_if_not_exists(group_id, group_name) -> None:
     if not db.check_if_group_exists(group_id):
-        db.add_new_group(group_id)
+        db.add_new_group(group_id, group_name)
 
 def run_bot() -> None:
     application = (

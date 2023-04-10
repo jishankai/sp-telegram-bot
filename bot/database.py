@@ -33,10 +33,15 @@ class Database:
 
     def add_new_group(
         self,
-        group_id: int
+        group_id: int,
+        group_name: str = "",
     ):
+        group_dict = {
+            "_id": group_id,
+            "group_name": group_name,
+        }
         if not self.check_if_group_exists(group_id):
-            self.group_collection.insert_one({"_id": group_id})
+            self.group_collection.insert_one(group_dict)
 
     def add_new_user(
         self,
