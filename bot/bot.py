@@ -30,10 +30,18 @@ import deribit_ws
 db = database.Database()
 logger = logging.getLogger(__name__)
 
+START_MESSAGE = """
+<i>
+Commands:
+- /coin – Token's Info[eg. /c bitcoin]
+- /help – Help
+</i>
+"""
 HELP_MESSAGE = """
 <i>
 Commands:
-- /coin – Token's Info[eg. /coin btc]
+- @signalplus_derivatives_bot - ChatGPT function [eg. @signalplus_derivatives_bot how to price options?]
+- /coin – Token's Info[eg. /c bitcoin]
 - /help – Help
 </i>
 """
@@ -64,7 +72,7 @@ async def start_handle(update: Update, context: CallbackContext):
     db.start_new_dialog(user_id)
     
     reply_text = "Hi! I'm <b>SignalPlus</b> bot. How can I help you today? 🤖"
-    reply_text += HELP_MESSAGE
+    reply_text += START_MESSAGE
     
     await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
 
