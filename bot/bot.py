@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 START_MESSAGE = """
 <i>
 Commands:
-- /coin – Token's Info[eg. /c bitcoin]
+- /coin – Token's Info[eg. /coin btc]
 - /help – Help
 </i>
 """
@@ -41,7 +41,7 @@ HELP_MESSAGE = """
 <i>
 Commands:
 - @signalplus_derivatives_bot - ChatGPT function [eg. @signalplus_derivatives_bot how to price options?]
-- /coin – Token's Info[eg. /c bitcoin]
+- /coin – Token's Info[eg. /coin btc]
 - /help – Help
 </i>
 """
