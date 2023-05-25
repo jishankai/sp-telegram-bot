@@ -189,11 +189,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
                 try:
                     answer += "\n\n<i>Join the SignalPlus Community, Master Advanced Trading Strategies and Macro Analysis, and Start Your Journey to Success: https://t.me/SignalPlus_Playground. \n\nThe Ultimate Tools for Professional Traders: https://t.signalplus.com</i>."
-                    await update.message.reply_text(answer, parse_mode=ParseMode.HTML)
+                    await update.message.reply_text(answer, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
                 except telegram.error.BadRequest:
                     # answer has invalid characters, so we send it without parse_mode
                     answer += "  Join the SignalPlus Community, Master Advanced Trading Strategies and Macro Analysis, and Start Your Journey to Success: https://t.me/SignalPlus_Playground. The Ultimate Tools for Professional Traders: https://t.signalplus.com."
-                    await update.message.reply_text(answer)
+                    await update.message.reply_text(answer, disable_web_page_preview=True)
 
     except Exception as e:
         error_text = f"Something went wrong during completion.\nReason: {e}"
