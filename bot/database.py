@@ -46,7 +46,8 @@ class Database:
             self.group_collection.insert_one(group_dict)
         else:
             filter = {"_id": group_id}
-            self.group_collection.update_one(filter, group_dict)
+            new_value = {"$set": {"member_count": member_count}}
+            self.group_collection.update_one(filter, new_value)
 
     def add_new_user(
         self,

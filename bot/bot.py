@@ -227,8 +227,8 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
 
 
 async def update_group_info(group_id, group_name) -> None:
-    members_count = await bot.get_chat_member_count(chat_id=group_id)
-    db.add_or_update_group(group_id, group_name, members_count)
+    member_count = await bot.get_chat_member_count(chat_id=group_id)
+    db.add_or_update_group(group_id, group_name, member_count)
 
 def run_bot() -> None:
     application = (
