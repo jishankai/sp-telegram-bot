@@ -31,17 +31,22 @@ class Database:
         else:
             return False
 
-    def add_new_group(
+    def add_or_update_group(
         self,
         group_id: int,
         group_name: str = "",
+        member_count: int = 0,
     ):
         group_dict = {
             "_id": group_id,
             "group_name": group_name,
+            "member_count": member_count
         }
         if not self.check_if_group_exists(group_id):
             self.group_collection.insert_one(group_dict)
+        else:
+            filter = {"_id": group_id}
+            self.group_collection.update_one(filter, group_dict)
 
     def add_new_user(
         self,

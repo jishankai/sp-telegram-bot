@@ -29,6 +29,7 @@ import deribit_ws
 # setup
 db = database.Database()
 logger = logging.getLogger(__name__)
+bot = telegram.Bot(token=config.telegram_token)
 
 START_MESSAGE = """
 <i>
@@ -155,7 +156,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         chat_type = update.message.chat.type
         if chat_type == 'private' or (chat_type in ['group', 'supergroup'] and config.bot_id in message):
             # collect group id
-            await register_group_if_not_exists(update.message.chat.id, update.message.chat.title)
+            await update_group_info(update.message.chat.id, update.message.chat.title)
 
             # send typing action
             await update.message.chat.send_action(action="typing")
@@ -225,9 +226,9 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
         logger.error("Error")
 
 
-async def register_group_if_not_exists(group_id, group_name) -> None:
-    if not db.check_if_group_exists(group_id):
-        db.add_new_group(group_id, group_name)
+async def update_group_info(group_id, group_name) -> None:
+    members_count = bot.get_chat_members_count(chat_id=group_id)
+    db.add_or_update_group(group_id, group_name, members_count)
 
 def run_bot() -> None:
     application = (
