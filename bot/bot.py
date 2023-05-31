@@ -37,7 +37,8 @@ Commands:
 - /coin – Token's Info[eg. /coin btc]
 - /help – Help
 
-Want to know what whales are doing in the options market? Contact ​@pieceofelephant and receive Block Trade Alert for free!
+Discover what options whales are trading 🚀
+Contact @pieceofelephant and get block trade alerts for FREE!
 </i>
 """
 HELP_MESSAGE = """
@@ -47,7 +48,8 @@ Commands:
 - /coin – Token's Info[eg. /coin btc]
 - /help – Help
 
-Want to know what whales are doing in the options market? Contact ​@pieceofelephant and receive Block Trade Alert for free!
+Discover what options whales are trading 🚀
+Contact @pieceofelephant and get block trade alerts for FREE!
 </i>
 """
 config_dir = Path(__file__).parent.parent.resolve() / "config"
