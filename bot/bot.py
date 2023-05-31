@@ -35,6 +35,8 @@ START_MESSAGE = """
 Commands:
 - /coin – Token's Info[eg. /coin btc]
 - /help – Help
+
+Want to know what whales are doing in the options market? Contact ​@pieceofelephant and receive Block Trade Alert for free!
 </i>
 """
 HELP_MESSAGE = """
@@ -43,6 +45,8 @@ Commands:
 - @signalplus_derivatives_bot - ChatGPT function [eg. @signalplus_derivatives_bot how to price options?]
 - /coin – Token's Info[eg. /coin btc]
 - /help – Help
+
+Want to know what whales are doing in the options market? Contact ​@pieceofelephant and receive Block Trade Alert for free!
 </i>
 """
 config_dir = Path(__file__).parent.parent.resolve() / "config"
